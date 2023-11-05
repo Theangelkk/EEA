@@ -10,9 +10,12 @@ import matplotlib.pyplot as plt
 import argparse
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
+import nest_asyncio
+
 import warnings
 
 warnings.filterwarnings("ignore")
+nest_asyncio.apply()
 
 def joinpath(rootdir, targetdir):
     return os.path.join(os.sep, rootdir + os.sep, targetdir)
@@ -43,7 +46,6 @@ parser.add_argument('-c','--country', help='Country selected', choices=list_of_c
                     required=True)
 args = vars(parser.parse_args())
 
-air_poll_selected = args["air_poll"]
 country = args["country"]
 
 # Path Regioni
@@ -102,16 +104,20 @@ if country == "IT":
 
     for air_pol in list_of_air_poll:
         
+        print("Current air pollutant: ", air_pol)
+
         # Filtering due to current air pollutant
         df_metainfo_country_air_pol = df_metainfo_country.loc[  
                                                         df_metainfo_country['AirPollutantCode'] == \
-                                                        dict_air_poll_code[air_poll_selected]
+                                                        dict_air_poll_code[air_pol]
                                                     ]
 
 
         # For all stations that measure the current air pollutant
         for current_cod_station in df_metainfo_country_air_pol.index:
-
+            
+            print("Current code station EEA: ", current_cod_station)
+            
             current_df_station = df_metainfo_country_air_pol.filter(like=current_cod_station, axis=0)
 
             lon_current_station = current_df_station["Longitude"][0]
