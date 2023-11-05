@@ -66,6 +66,11 @@ raw_path_meta_info = joinpath(DATADIR, "All_metainfo.csv")
 if not os.path.exists(raw_path_meta_info):
     client.download_metadata(raw_path_meta_info)
 
+new_path_meta_info = joinpath(DATADIR, "New_metainfo")
+
+if not os.path.exists(new_path_meta_info):
+  os.mkdir(new_path_meta_info)
+
 # Index 5: AirQualityStationEoICode
 df_metainfo = pd.read_table(raw_path_meta_info, header=[0], index_col=5, low_memory=False)
 
@@ -117,7 +122,7 @@ if country == "IT":
         for current_cod_station in df_metainfo_country_air_pol.index:
             
             print("Current code station EEA: ", current_cod_station)
-            
+
             current_df_station = df_metainfo_country_air_pol.filter(like=current_cod_station, axis=0)
 
             lon_current_station = current_df_station["Longitude"][0]
@@ -157,7 +162,7 @@ if country == "IT":
                     df_metainfo_country_air_pol.loc[current_df_station.index,"Comune"] = name_comune
                     break
                 
-        path_metainfo_country_air_pol = joinpath(DATADIR, air_pol + "_" + country + "_metainfo.csv")
+        path_metainfo_country_air_pol = joinpath(new_path_meta_info, air_pol + "_" + country + "_metainfo.csv")
         df_metainfo_country_air_pol.to_csv(path_metainfo_country_air_pol)
 
 else:
@@ -167,8 +172,8 @@ else:
         # Filtering due to current air pollutant
         df_metainfo_country_air_pol = df_metainfo_country.loc[  
                                                         df_metainfo_country['AirPollutantCode'] == \
-                                                        dict_air_poll_code[air_poll_selected]
+                                                        dict_air_poll_code[air_pol]
                                                     ]
 
-        path_metainfo_country_air_pol = joinpath(DATADIR, air_pol + "_" + country + "_metainfo.csv")
+        path_metainfo_country_air_pol = joinpath(new_path_meta_info, air_pol + "_" + country + "_metainfo.csv")
         df_metainfo_country_air_pol.to_csv(path_metainfo_country_air_pol)
