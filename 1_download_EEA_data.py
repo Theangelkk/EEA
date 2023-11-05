@@ -9,6 +9,11 @@ import airbase
 import matplotlib.pyplot as plt
 import argparse
 import warnings
+import asyncio
+
+import platform
+if platform.system()=='Windows':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 warnings.filterwarnings("ignore")
 
@@ -73,12 +78,11 @@ if not os.path.exists(path_raw_data):
     req_air_pol.download_to_file(path_raw_data)
 
 # Loading Raw CSV file -- Index 4: AirQualityStationEoICode	
-df = pd.read_table(path_raw_data, delimiter=',', header=[0], index_col=4, low_memory=False)
+df = pd.read_table(path_raw_data, delimiter=',', header=[0], index_col=4, low_memory=False, encoding='unicode_escape')
 
 # Filtering due to freq_mode specified
 df_freq_mode = df.loc[df['AveragingTime'] == "hour"]
 
-print(df_freq_mode.index.unique())
 print("Number of " + air_poll_selected + " stations: " + str(len(df_freq_mode.index.unique())))
 
 # Selecting interested columns
@@ -90,7 +94,7 @@ df_freq_mode = df_freq_mode[['DatetimeBegin','Concentration']]
 # Sorting by DatetimeBegin
 df_freq_mode_date = df_freq_mode.sort_values(by='DatetimeBegin')
 
-dir_air_pol_freq_mode = joinpath(dir_country, freq_mode)
+dir_air_pol_freq_mode = joinpath(dir_air_pol, freq_mode)
 
 if not os.path.exists(dir_air_pol_freq_mode):
   os.mkdir(dir_air_pol_freq_mode)
@@ -103,7 +107,7 @@ if not os.path.exists(path_ds_freq_mode):
 # Splitting for each year
 current_year = start_year
 
-for i in range(len(start_year, end_year)):
+for i in range(start_year, end_year):
 
     print("Current year: " + str(current_year))
     
@@ -112,10 +116,13 @@ for i in range(len(start_year, end_year)):
     
     for current_station, row in df_freq_mode.iterrows():
       
-        if  current_year in row["DatetimeBegin"] and \
+        if  str(current_year) in row["DatetimeBegin"] and \
             current_station not in list_added_station:
 
             print("Current station: " + current_station)
+            list_added_station.append(current_station)
 
             with open(path_file_current_year, "a") as file_current_year:
                 file_current_year.write(current_station + "\n")
+    
+    current_year += 1
