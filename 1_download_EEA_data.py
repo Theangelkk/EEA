@@ -78,21 +78,22 @@ if not os.path.exists(path_raw_data):
     req_air_pol.download_to_file(path_raw_data)
 
 # Loading Raw CSV file -- Index 4: AirQualityStationEoICode	
-df = pd.read_table(path_raw_data, delimiter=',', header=[0], index_col=4, low_memory=False, encoding='unicode_escape')
+if air_poll_selected == "NO2":
+  low_memory_flag = True
+else:
+  low_memory_flag = False
+
+df = pd.read_table( path_raw_data, delimiter=',', header=[0], index_col=4, low_memory=low_memory_flag, on_bad_lines='skip', \
+                    encoding='unicode_escape')
 
 # Filtering due to freq_mode specified
 df_freq_mode = df.loc[df['AveragingTime'] == "hour"]
-
-print("Number of " + air_poll_selected + " stations: " + str(len(df_freq_mode.index.unique())))
 
 # Selecting interested columns
 df_freq_mode = df_freq_mode.filter(items=['Concentration','DatetimeBegin'])
 
 # Reset DataFrame with columns in desired order
 df_freq_mode = df_freq_mode[['DatetimeBegin','Concentration']]
-
-# Sorting by DatetimeBegin
-df_freq_mode_date = df_freq_mode.sort_values(by='DatetimeBegin')
 
 dir_air_pol_freq_mode = joinpath(dir_air_pol, freq_mode)
 
@@ -102,7 +103,17 @@ if not os.path.exists(dir_air_pol_freq_mode):
 path_ds_freq_mode = joinpath(dir_air_pol_freq_mode, country + "_" + air_poll_selected + "_" + str(start_year) + "_" + str(end_year) + "_" + freq_mode + ".csv")
 
 if not os.path.exists(path_ds_freq_mode):
-   df_freq_mode_date.to_csv(path_ds_freq_mode)
+    # Sorting by DatetimeBegin
+    df_freq_mode_date = df_freq_mode.sort_values(by='DatetimeBegin')
+    df_freq_mode_date.to_csv(path_ds_freq_mode)
+
+path_log = joinpath(dir_air_pol_freq_mode, country + "_" + air_poll_selected + "_" + str(start_year) + "_" + str(end_year) + "_" + freq_mode + "_log.txt")
+string_output = "Number of " + air_poll_selected + " stations: " + str(len(df_freq_mode.index.unique()))
+
+print(string_output)
+
+with open(path_log, "a") as file_log:
+  file_log.write(string_output + "\n")
 
 # Splitting for each year
 current_year = start_year
@@ -110,19 +121,29 @@ current_year = start_year
 for i in range(start_year, end_year):
 
     print("Current year: " + str(current_year))
-    
-    list_added_station = []
+    start_date_current_year = str(current_year) + "-01-01"
+    end_date_current_year = str(current_year) + "-12-31"
+
     path_file_current_year = joinpath(dir_air_pol_freq_mode, str(current_year) + ".txt")
-    
-    for current_station, row in df_freq_mode.iterrows():
-      
-        if  str(current_year) in row["DatetimeBegin"] and \
-            current_station not in list_added_station:
 
-            print("Current station: " + current_station)
-            list_added_station.append(current_station)
-
-            with open(path_file_current_year, "a") as file_current_year:
-                file_current_year.write(current_station + "\n")
+    mask =  (df_freq_mode['DatetimeBegin'] >= start_date_current_year) & \
+            (df_freq_mode['DatetimeBegin'] <= end_date_current_year)
     
+    df_freq_mode_current_year = df_freq_mode.loc[mask]
+
+    string_output = "Number of " + air_poll_selected + " stations year " + str(current_year) + ": " + \
+              str(len(df_freq_mode_current_year.index.unique()))
+    
+    print(string_output)
+
+    with open(path_log, "a") as file_log:
+      file_log.write(string_output + "\n")
+
+    list_idx_current_year = df_freq_mode_current_year.index.unique()
+
+    for current_station in list_idx_current_year:
+
+      with open(path_file_current_year, "a") as file_current_year:
+        file_current_year.write(current_station + "\n")
+
     current_year += 1
