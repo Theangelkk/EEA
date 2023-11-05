@@ -66,7 +66,7 @@ raw_path_meta_info = joinpath(DATADIR, "All_metainfo.csv")
 if not os.path.exists(raw_path_meta_info):
     client.download_metadata(raw_path_meta_info)
 
-new_path_meta_info = joinpath(DATADIR, "New_metainfo")
+new_path_meta_info = joinpath(os.getcwd(), "New_metainfo")
 
 if not os.path.exists(new_path_meta_info):
   os.mkdir(new_path_meta_info)
