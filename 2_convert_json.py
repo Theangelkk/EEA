@@ -121,7 +121,7 @@ if start_year > end_year:
 
 # Path of metainfo files
 path_metainfo_file = joinpath(path_main_dir_EEA_data, "New_metainfo")
-path_metainfo_file = joinpath(path_metainfo_file, air_poll_selected + "_" + country + "metainfo.csv")
+path_metainfo_file = joinpath(path_metainfo_file, air_poll_selected + "_" + country + "_metainfo.csv")
 
 # Path of CSV EEA stations data
 path_dir_csv = joinpath(path_main_dir_EEA_data, "EEA_data")
@@ -219,6 +219,8 @@ for idx_year in range(start_year,end_year):
             # Retrive measures of current station about the current year considered
             start_date_current_year = str(current_year) + "-01-01"
             end_date_current_year = str(current_year) + "-12-31"
+            
+            start_date_current_year_date = datetime(current_year, 1, 1, 0, 0)
 
             mask =  (df_current_station['DatetimeBegin'] >= start_date_current_year) & \
                     (df_current_station['DatetimeBegin'] <= end_date_current_year)
@@ -232,7 +234,7 @@ for idx_year in range(start_year,end_year):
                     first_date_current_station = \
                         datetime.strptime(row["DatetimeBegin"].replace(' +01:00', ''), '%Y-%m-%d %H:%M:%S')
 
-                    diff_dates = first_date_current_station - start_date_current_year
+                    diff_dates = first_date_current_station - start_date_current_year_date
                     diff_dates = int(diff_dates.total_seconds() / (60*60*delta))
 
                     # Check if the first measure is acquired after then current_year-01-01 00:00:00
