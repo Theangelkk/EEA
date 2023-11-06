@@ -17,14 +17,18 @@ if platform.system()=='Windows':
 
 warnings.filterwarnings("ignore")
 
+# Path of EEA_data
+path_main_dir_EEA_data = os.environ['EEA_data']
+
+if path_main_dir_EEA_data == "":
+    print("Error: set the environmental variables of EEA data")
+    exit(-1)
+
+if not os.path.exists(path_main_dir_EEA_data):
+  os.mkdir(path_main_dir_EEA_data)
+
 def joinpath(rootdir, targetdir):
     return os.path.join(os.sep, rootdir + os.sep, targetdir)
-
-# Main data directory 
-DATADIR = joinpath(os.getcwd() , "EEA_data")
-
-if not os.path.exists(DATADIR):
-  os.mkdir(DATADIR)
 
 # Client Airbase
 client = airbase.AirbaseClient()
@@ -61,7 +65,7 @@ path_metainfo = joinpath(dir_metainfo, air_poll_selected + "_" + country + "_met
 # Request of air pollutant to download
 req_air_pol = client.request(country=[country], pl=[air_poll_selected], year_from=start_year, year_to=end_year)
 
-dir_country = joinpath(DATADIR, country)
+dir_country = joinpath(path_main_dir_EEA_data, country)
 
 if not os.path.exists(dir_country):
   os.mkdir(dir_country)

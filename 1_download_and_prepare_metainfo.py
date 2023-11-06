@@ -20,8 +20,15 @@ nest_asyncio.apply()
 def joinpath(rootdir, targetdir):
     return os.path.join(os.sep, rootdir + os.sep, targetdir)
 
+# Path of EEA_data
+path_main_dir_EEA_data = os.environ['EEA_data']
+
+if path_main_dir_EEA_data == "":
+    print("Error: set the environmental variables of EEA data")
+    exit(-1)
+
 # Main data directory 
-DATADIR = joinpath(os.getcwd() , "Raw_metainfo")
+DATADIR = joinpath(path_main_dir_EEA_data, "Raw_metainfo")
 
 if not os.path.exists(DATADIR):
   os.mkdir(DATADIR)
