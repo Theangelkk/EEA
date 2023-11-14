@@ -6,7 +6,6 @@ import os
 import numpy as np
 import pandas as pd
 import airbase
-import matplotlib.pyplot as plt
 import argparse
 import warnings
 import asyncio
@@ -65,6 +64,11 @@ path_metainfo = joinpath(dir_metainfo, air_poll_selected + "_" + country + "_met
 # Request of air pollutant to download
 req_air_pol = client.request(country=[country], pl=[air_poll_selected], year_from=start_year, year_to=end_year)
 
+path_main_dir_EEA_data = joinpath(path_main_dir_EEA_data, "EEA_data")
+
+if not os.path.exists(path_main_dir_EEA_data):
+  os.mkdir(path_main_dir_EEA_data)
+
 dir_country = joinpath(path_main_dir_EEA_data, country)
 
 if not os.path.exists(dir_country):
@@ -91,7 +95,7 @@ df = pd.read_table( path_raw_data, delimiter=',', header=[0], index_col=4, low_m
                     encoding='unicode_escape')
 
 # Filtering due to freq_mode specified
-df_freq_mode = df.loc[df['AveragingTime'] == "hour"]
+df_freq_mode = df.loc[df['AveragingTime'] == freq_mode]
 
 # Selecting interested columns
 df_freq_mode = df_freq_mode.filter(items=['Concentration','DatetimeBegin'])
