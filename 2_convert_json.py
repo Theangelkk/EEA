@@ -35,10 +35,12 @@ if path_main_dir_EEA_data == "":
 # Function related on creation of empty Italy dictionary
 def empty_dict_italy_region():
 
-    list_italy_region = [   "Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna", \
-                        "Friuli Venezia Giulia", "Lazio", "Liguria", "Lombardia", "Marche", \
-                        "Molise", "Piemonte", "Puglia", "Sardegna", "Sicilia", "Toscana", \
-                        "Trentino-Alto Adige", "Umbria", "Valle d'Aosta", "Veneto"]
+    list_italy_region = [   "All_regions", "Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna", \
+                            "Friuli Venezia Giulia", "Lazio", "Liguria", "Lombardia", "Marche", \
+                            "Molise", "Piemonte", "Puglia", "Sardegna", "Sicilia", "Toscana", \
+                            "Trentino-Alto Adige", "Umbria", "Valle d'Aosta", "Veneto"
+                    ]
+    
     dict_italy_region = {}
 
     for region in list_italy_region:
@@ -60,14 +62,83 @@ def empty_dict_italy_region():
         # missing values in the maximum lenght of missing data tract
         dict_current_region["sorted_station_MDTs_min"] = []
 
+        # Number of station with more than 75 % of valid samples
+        dict_current_region["N_stations_more_75_perc_of_valid_data"] = 0
+
+        # Type of EEA station
+        dict_current_region["N_station_AirQualityStationType"] = {  
+                                                                    "background": 0, \
+                                                                    "bndustrial": 0, \
+                                                                    "traffic": 0
+                                                                }
+
+        # Type of area where it is located the EEA station
+        dict_current_region["N_station_AirQualityStationArea"] = {
+                                                            "rural": 0, \
+                                                            "rural-nearcity": 0, \
+                                                            "rural-regional": 0, \
+                                                            "rural-remote": 0,
+                                                            "suburban": 0,
+                                                            "urban": 0,
+                                                        }
+        
         dict_italy_region[region] = dict_current_region
 
     return dict_italy_region
 
+# Function related on creation of empty Italy dictionary for each type of station
+def empty_dict_italy_region(AirQualityStationType):
+
+    list_italy_region = [   "All_regions", "Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna", \
+                            "Friuli Venezia Giulia", "Lazio", "Liguria", "Lombardia", "Marche", \
+                            "Molise", "Piemonte", "Puglia", "Sardegna", "Sicilia", "Toscana", \
+                            "Trentino-Alto Adige", "Umbria", "Valle d'Aosta", "Veneto"
+                    ]
+    
+    dict_italy_region = {}
+
+    for region in list_italy_region:
+        
+        dict_current_region = {}
+        dict_current_region["AirQualityStationType"] = AirQualityStationType
+        dict_current_region["N_stations"] = 0
+        dict_current_region["stations"] = {}
+
+        # Total number of measures
+        dict_current_region["N_tot_measures"] = 0
+
+        # Total number of valid measures
+        dict_current_region["N_tot_valid_measures"] = 0
+
+        # Total number of missing values
+        dict_current_region["N_tot_missing_values"] = 0
+
+        # Sorted list of the stations with minumin number of
+        # missing values in the maximum lenght of missing data tract
+        dict_current_region["sorted_station_MDTs_min"] = []
+
+        # Number of station with more than 75 % of valid samples
+        dict_current_region["N_stations_more_75_perc_of_valid_data"] = 0
+
+        # Type of area where it is located the EEA station
+        dict_current_region["N_station_AirQualityStationArea"] = {
+                                                            "rural": 0, \
+                                                            "rural-nearcity": 0, \
+                                                            "rural-regional": 0, \
+                                                            "rural-remote": 0,
+                                                            "suburban": 0,
+                                                            "urban": 0,
+                                                        }
+        
+        dict_italy_region[region] = dict_current_region
+
+    return dict_italy_region
+
+
 def fill_dict_station(  
                         Number_of_MDTs, Max_len_of_MDTs, Min_len_of_MDTs,
                         Avg_len_of_MDTs, N_tot_measures, N_tot_valid_measures,
-                        N_tot_missing_values
+                        N_tot_missing_values, AirQualityStationType, AirQualityStationArea
                     ):
 
     dict_info_station = {}
@@ -92,6 +163,18 @@ def fill_dict_station(
 
     # Total number of missing values
     dict_info_station["N_tot_missing_values"] = N_tot_missing_values
+
+    # Percentage of valid samples
+    dict_info_station["Percentage_of_valid_data"] = (
+                                                        (N_tot_valid_measures / float(N_tot_measures)) * 100 if \
+                                                        N_tot_measures > 0 else 0.0
+                                                    )
+
+    # Type of EEA station
+    dict_info_station["AirQualityStationType"] = AirQualityStationType
+
+    # Type of area where it is located the EEA station
+    dict_info_station["AirQualityStationArea"] = AirQualityStationArea
 
     return dict_info_station
 
@@ -172,6 +255,9 @@ for idx_year in range(start_year,end_year):
 
     if country == "IT":
         dict_country_current_year = empty_dict_italy_region()
+        dict_country_current_year_background = empty_dict_italy_region("background")
+        dict_country_current_year_industrial = empty_dict_italy_region("industrial")
+        dict_country_current_year_traffic = empty_dict_italy_region("traffic")
     else:
         print("Implement for the country specified")
         exit(-1)
@@ -209,6 +295,8 @@ for idx_year in range(start_year,end_year):
             len_min_missing_values_current_station_current_year = np.inf
             len_avg_missing_values_current_station_current_year = 0
             count_missing_data_tracts_current_station_current_year = 0
+            AirQualityStationType_current_station = ""
+            AirQualityStationArea_current_station = ""
 
             # If it has been observed a new Missing Data Tract
             current_MDT = False
@@ -243,7 +331,10 @@ for idx_year in range(start_year,end_year):
                         len_max_missing_values_current_station_current_year = diff_dates
                         len_min_missing_values_current_station_current_year = diff_dates
                         len_avg_missing_values_current_station_current_year = diff_dates
-                        
+                    
+                    AirQualityStationType_current_station = row['AirQualityStationType']
+                    AirQualityStationArea_current_station = row['AirQualityStationArea']
+
                     first_day = False
 
                 count_total_measures_current_station_current_year += 1
@@ -286,6 +377,10 @@ for idx_year in range(start_year,end_year):
             dict_country_current_year[current_station_region]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
             dict_country_current_year[current_station_region]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
 
+            dict_country_current_year["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
+            dict_country_current_year["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+            dict_country_current_year["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+            
             dict_info_current_station = fill_dict_station(  
                                                             count_missing_data_tracts_current_station_current_year, 
                                                             len_max_missing_values_current_station_current_year, 
@@ -293,10 +388,22 @@ for idx_year in range(start_year,end_year):
                                                             len_avg_missing_values_current_station_current_year, 
                                                             count_total_measures_current_station_current_year, 
                                                             count_valid_measures_current_station_current_year,
-                                                            count_nan_measures_current_station_current_year
+                                                            count_nan_measures_current_station_current_year,
+                                                            AirQualityStationType_current_station,
+                                                            AirQualityStationArea_current_station
                                                     )
-            
+
             dict_country_current_year[current_station_region]["stations"][cod_station] = dict_info_current_station
+
+            if dict_info_current_station["Percentage_of_valid_data"] >= 75.0:
+                dict_country_current_year[current_station_region]["N_stations_more_75_perc_of_valid_data"] += 1
+                dict_country_current_year["All_regions"]["N_stations_more_75_perc_of_valid_data"] += 1
+            
+            dict_country_current_year[current_station_region]["N_station_AirQualityStationType"][AirQualityStationType_current_station] += 1
+            dict_country_current_year[current_station_region]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+
+            dict_country_current_year["All_regions"]["N_station_AirQualityStationType"][AirQualityStationType_current_station] += 1
+            dict_country_current_year["All_regions"]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
 
             # Sorting the dictionary due to the minumum lenght of the maximum number of
             # missing values of all stations
@@ -306,12 +413,108 @@ for idx_year in range(start_year,end_year):
             dict_country_current_year[current_station_region]["sorted_station_MDTs_min"] = []
             for k in range(len(list_sorted)):
                 dict_country_current_year[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
+            
+            if AirQualityStationType_current_station == "background":
+                dict_country_current_year_background["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
+                dict_country_current_year_background["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+                dict_country_current_year_background["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+
+                dict_country_current_year_background[current_station_region]["N_tot_measures"] += count_total_measures_current_station_current_year
+                dict_country_current_year_background[current_station_region]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+                dict_country_current_year_background[current_station_region]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+
+                dict_country_current_year_background[current_station_region]["stations"][cod_station] = dict_info_current_station
+
+                if dict_info_current_station["Percentage_of_valid_data"] >= 75.0:
+                    dict_country_current_year_background[current_station_region]["N_stations_more_75_perc_of_valid_data"] += 1
+                    dict_country_current_year_background["All_regions"]["N_stations_more_75_perc_of_valid_data"] += 1
+
+                dict_country_current_year_background[current_station_region]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+                dict_country_current_year_background["All_regions"]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+
+                # Sorting the dictionary due to the minumum lenght of the maximum number of
+                # missing values of all stations
+                dict_tmp = dict_country_current_year_background[current_station_region]["stations"].copy()
+                list_sorted = sorted(dict_tmp.items(), key=lambda t: t[1]["Max_len_of_MDTs"])
+
+                dict_country_current_year_background[current_station_region]["sorted_station_MDTs_min"] = []
+                for k in range(len(list_sorted)):
+                    dict_country_current_year_background[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
+
+            elif AirQualityStationType_current_station == "industrial":
+                dict_country_current_year_industrial["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
+                dict_country_current_year_industrial["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+                dict_country_current_year_industrial["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+
+                dict_country_current_year_industrial[current_station_region]["N_tot_measures"] += count_total_measures_current_station_current_year
+                dict_country_current_year_industrial[current_station_region]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+                dict_country_current_year_industrial[current_station_region]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+
+                dict_country_current_year_industrial[current_station_region]["stations"][cod_station] = dict_info_current_station
+
+                if dict_info_current_station["Percentage_of_valid_data"] >= 75.0:
+                    dict_country_current_year_industrial[current_station_region]["N_stations_more_75_perc_of_valid_data"] += 1
+                    dict_country_current_year_industrial["All_regions"]["N_stations_more_75_perc_of_valid_data"] += 1
+
+                dict_country_current_year_industrial[current_station_region]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+                dict_country_current_year_industrial["All_regions"]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+
+                # Sorting the dictionary due to the minumum lenght of the maximum number of
+                # missing values of all stations
+                dict_tmp = dict_country_current_year_industrial[current_station_region]["stations"].copy()
+                list_sorted = sorted(dict_tmp.items(), key=lambda t: t[1]["Max_len_of_MDTs"])
+
+                dict_country_current_year_industrial[current_station_region]["sorted_station_MDTs_min"] = []
+                for k in range(len(list_sorted)):
+                    dict_country_current_year_industrial[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
+
+            else:
+                dict_country_current_year_traffic["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
+                dict_country_current_year_traffic["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+                dict_country_current_year_traffic["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+
+                dict_country_current_year_traffic[current_station_region]["N_tot_measures"] += count_total_measures_current_station_current_year
+                dict_country_current_year_traffic[current_station_region]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
+                dict_country_current_year_traffic[current_station_region]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
+
+                dict_country_current_year_traffic[current_station_region]["stations"][cod_station] = dict_info_current_station
+
+                if dict_info_current_station["Percentage_of_valid_data"] >= 75.0:
+                    dict_country_current_year_traffic[current_station_region]["N_stations_more_75_perc_of_valid_data"] += 1
+                    dict_country_current_year_traffic["All_regions"]["N_stations_more_75_perc_of_valid_data"] += 1
+
+                dict_country_current_year_traffic[current_station_region]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+                dict_country_current_year_traffic["All_regions"]["N_station_AirQualityStationArea"][AirQualityStationArea_current_station] += 1
+
+                # Sorting the dictionary due to the minumum lenght of the maximum number of
+                # missing values of all stations
+                dict_tmp = dict_country_current_year_traffic[current_station_region]["stations"].copy()
+                list_sorted = sorted(dict_tmp.items(), key=lambda t: t[1]["Max_len_of_MDTs"])
+
+                dict_country_current_year_traffic[current_station_region]["sorted_station_MDTs_min"] = []
+                for k in range(len(list_sorted)):
+                    dict_country_current_year_traffic[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
 
     # Save the dictionary in a JSON file
     path_current_year_json = joinpath(path_dir_csv, str(current_year) + ".json")
+    path_current_year_background_json = joinpath(path_dir_csv, str(current_year) + "_background.json")
+    path_current_year_industrial_json = joinpath(path_dir_csv, str(current_year) + "_industrial.json")
+    path_current_year_traffic_json = joinpath(path_dir_csv, str(current_year) + "_traffic.json")
     
     with open(path_current_year_json, 'w') as json_file:
         json_dumps_str = json.dumps(dict_country_current_year, indent=4)
+        json_file.write(json_dumps_str)
+
+    with open(path_current_year_background_json, 'w') as json_file:
+        json_dumps_str = json.dumps(dict_country_current_year_background, indent=4)
+        json_file.write(json_dumps_str)
+    
+    with open(path_current_year_industrial_json, 'w') as json_file:
+        json_dumps_str = json.dumps(dict_country_current_year_industrial, indent=4)
+        json_file.write(json_dumps_str)
+
+    with open(path_current_year_traffic_json, 'w') as json_file:
+        json_dumps_str = json.dumps(dict_country_current_year_traffic, indent=4)
         json_file.write(json_dumps_str)
     
     current_year += 1

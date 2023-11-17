@@ -87,14 +87,16 @@ df_metainfo_country = df_metainfo.loc[df_metainfo['Countrycode'] == country]
 df_metainfo_country = df_metainfo_country.filter(items=[
                                                             'AirPollutantCode', 'Longitude', 'Latitude',
                                                             'Altitude', 'ObservationDateBegin', 'ObservationDateEnd',
-                                                            'AirQualityStationType'
+                                                            'AirQualityStationType', 'AirQualityStationArea', \
+                                                            'BuildingDistance', 'KerbDistance'
                                     ])
 
 # Reset DataFrame with columns in desired order
 df_metainfo_country = df_metainfo_country[[
-                                            'AirPollutantCode', 'Longitude', 'Latitude',
-                                            'Altitude', 'ObservationDateBegin', 'ObservationDateEnd',
-                                            'AirQualityStationType'
+                                            'AirPollutantCode', 'Longitude', 'Latitude', \
+                                            'Altitude', 'ObservationDateBegin', 'ObservationDateEnd', \
+                                            'AirQualityStationType', 'AirQualityStationArea', \
+                                            'BuildingDistance', 'KerbDistance'
                         ]]
 
 # Add spatial information of EEA stations to Italy country
