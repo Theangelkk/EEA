@@ -6,7 +6,6 @@ import os
 import numpy as np
 import pandas as pd
 import airbase
-import matplotlib.pyplot as plt
 import argparse
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
@@ -73,7 +72,7 @@ raw_path_meta_info = joinpath(DATADIR, "All_metainfo.csv")
 if not os.path.exists(raw_path_meta_info):
     client.download_metadata(raw_path_meta_info)
 
-new_path_meta_info = joinpath(os.getcwd(), "New_metainfo")
+new_path_meta_info = joinpath(path_main_dir_EEA_data, "New_metainfo")
 
 if not os.path.exists(new_path_meta_info):
   os.mkdir(new_path_meta_info)
