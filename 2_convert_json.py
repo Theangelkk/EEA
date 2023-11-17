@@ -68,7 +68,7 @@ def empty_dict_italy_region():
         # Type of EEA station
         dict_current_region["N_station_AirQualityStationType"] = {  
                                                                     "background": 0, \
-                                                                    "bndustrial": 0, \
+                                                                    "industrial": 0, \
                                                                     "traffic": 0
                                                                 }
 
@@ -87,7 +87,7 @@ def empty_dict_italy_region():
     return dict_italy_region
 
 # Function related on creation of empty Italy dictionary for each type of station
-def empty_dict_italy_region(AirQualityStationType):
+def empty_dict_italy_region_air_station_type(AirQualityStationType):
 
     list_italy_region = [   "All_regions", "Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna", \
                             "Friuli Venezia Giulia", "Lazio", "Liguria", "Lombardia", "Marche", \
@@ -255,9 +255,9 @@ for idx_year in range(start_year,end_year):
 
     if country == "IT":
         dict_country_current_year = empty_dict_italy_region()
-        dict_country_current_year_background = empty_dict_italy_region("background")
-        dict_country_current_year_industrial = empty_dict_italy_region("industrial")
-        dict_country_current_year_traffic = empty_dict_italy_region("traffic")
+        dict_country_current_year_background = empty_dict_italy_region_air_station_type("background")
+        dict_country_current_year_industrial = empty_dict_italy_region_air_station_type("industrial")
+        dict_country_current_year_traffic = empty_dict_italy_region_air_station_type("traffic")
     else:
         print("Implement for the country specified")
         exit(-1)
@@ -276,9 +276,9 @@ for idx_year in range(start_year,end_year):
             df_current_station = df_air_pol_metainfo.filter(like=cod_station, axis=0)
 
             current_station_region = df_current_station["Regione"].values[0]
+            AirQualityStationType_current_station = df_current_station['AirQualityStationType'].values[0]
+            AirQualityStationArea_current_station = df_current_station['AirQualityStationArea'].values[0]
 
-            dict_country_current_year[current_station_region]["N_stations"] += 1
-        
             # --------------------- Computing Missing values --------------------- 
 
             # Query on csv file due to cod_station
@@ -295,8 +295,6 @@ for idx_year in range(start_year,end_year):
             len_min_missing_values_current_station_current_year = np.inf
             len_avg_missing_values_current_station_current_year = 0
             count_missing_data_tracts_current_station_current_year = 0
-            AirQualityStationType_current_station = ""
-            AirQualityStationArea_current_station = ""
 
             # If it has been observed a new Missing Data Tract
             current_MDT = False
@@ -314,7 +312,7 @@ for idx_year in range(start_year,end_year):
                     (df_current_station['DatetimeBegin'] <= end_date_current_year)
     
             df_current_station_current_year = df_current_station.loc[mask]
-
+        
             for idx, row in df_current_station_current_year.iterrows():
                 
                 # It it is the first measure
@@ -332,9 +330,6 @@ for idx_year in range(start_year,end_year):
                         len_min_missing_values_current_station_current_year = diff_dates
                         len_avg_missing_values_current_station_current_year = diff_dates
                     
-                    AirQualityStationType_current_station = row['AirQualityStationType']
-                    AirQualityStationArea_current_station = row['AirQualityStationArea']
-
                     first_day = False
 
                 count_total_measures_current_station_current_year += 1
@@ -373,6 +368,9 @@ for idx_year in range(start_year,end_year):
             if count_missing_data_tracts_current_station_current_year > 0:
                 len_avg_missing_values_current_station_current_year /= float(count_missing_data_tracts_current_station_current_year)
             
+            dict_country_current_year["All_regions"]["N_stations"] += 1
+            dict_country_current_year[current_station_region]["N_stations"] += 1
+
             dict_country_current_year[current_station_region]["N_tot_measures"] += count_total_measures_current_station_current_year
             dict_country_current_year[current_station_region]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
             dict_country_current_year[current_station_region]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
@@ -415,6 +413,9 @@ for idx_year in range(start_year,end_year):
                 dict_country_current_year[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
             
             if AirQualityStationType_current_station == "background":
+                dict_country_current_year_background["All_regions"]["N_stations"] += 1
+                dict_country_current_year_background[current_station_region]["N_stations"] += 1
+
                 dict_country_current_year_background["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
                 dict_country_current_year_background["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
                 dict_country_current_year_background["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
@@ -442,6 +443,9 @@ for idx_year in range(start_year,end_year):
                     dict_country_current_year_background[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
 
             elif AirQualityStationType_current_station == "industrial":
+                dict_country_current_year_industrial["All_regions"]["N_stations"] += 1
+                dict_country_current_year_industrial[current_station_region]["N_stations"] += 1
+
                 dict_country_current_year_industrial["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
                 dict_country_current_year_industrial["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
                 dict_country_current_year_industrial["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
@@ -469,6 +473,9 @@ for idx_year in range(start_year,end_year):
                     dict_country_current_year_industrial[current_station_region]["sorted_station_MDTs_min"].append(list_sorted[k][0])
 
             else:
+                dict_country_current_year_traffic["All_regions"]["N_stations"] += 1
+                dict_country_current_year_traffic[current_station_region]["N_stations"] += 1
+
                 dict_country_current_year_traffic["All_regions"]["N_tot_measures"] += count_total_measures_current_station_current_year
                 dict_country_current_year_traffic["All_regions"]["N_tot_valid_measures"] += count_valid_measures_current_station_current_year
                 dict_country_current_year_traffic["All_regions"]["N_tot_missing_values"] += count_nan_measures_current_station_current_year
