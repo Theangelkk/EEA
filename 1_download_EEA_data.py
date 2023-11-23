@@ -140,14 +140,14 @@ for i in range(start_year, end_year):
     df_freq_mode_current_year = df_freq_mode.loc[mask]
 
     string_output = "Number of " + air_poll_selected + " stations year " + str(current_year) + ": " + \
-              str(len(df_freq_mode_current_year.index.unique()))
+              str(len(df_freq_mode_current_year.index.dropna().unique()))
     
     print(string_output)
 
     with open(path_log, "a") as file_log:
       file_log.write(string_output + "\n")
 
-    list_idx_current_year = df_freq_mode_current_year.index.unique()
+    list_idx_current_year = df_freq_mode_current_year.index.dropna().unique()
 
     for current_station in list_idx_current_year:
 
